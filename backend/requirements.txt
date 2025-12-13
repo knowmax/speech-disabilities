@@ -1,0 +1,46 @@
+# Core Backend Dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+websockets==12.0
+
+# Audio Processing
+librosa==0.10.1
+soundfile==0.12.1
+noisereduce==3.0.0
+# webrtcvad==2.0.10  # Requires C++ compiler - using librosa for VAD instead
+pydub==0.25.1
+
+# ASR & NLP
+openai-whisper==20231117
+torch>=2.1.0
+torchaudio>=2.1.0
+transformers>=4.35.2
+sentencepiece>=0.1.99
+accelerate>=0.25.0
+
+# TTS (Coqui TTS removed due to dependency conflicts - use pyttsx3 instead)
+# TTS==0.20.0
+pyttsx3==2.90
+
+# Evaluation & Metrics
+jiwer==3.0.3
+numpy>=1.26.0
+scipy>=1.11.4
+
+# Database & Storage
+sqlalchemy==2.0.23
+aiosqlite==0.19.0
+
+# Utilities
+python-dotenv==1.0.0
+pydantic==2.5.0
+aiofiles==23.2.1
+httpx==0.25.2
+
+# Logging & Monitoring
+loguru==0.7.2
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
