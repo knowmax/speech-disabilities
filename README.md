@@ -2,12 +2,37 @@
 
 **Transform dysarthric and impaired speech into clear, understandable text and audio in real-time.**
 
-This project provides an AI-powered backend service that processes speech from individuals with dysarthria or other speech disabilities, transcribes it using advanced ASR (Automatic Speech Recognition), corrects common speech patterns, and generates clear, natural-sounding audio output.
+This project delivers an assistive AI platform that improves communication for people with speech disabilities by converting impaired speech into clear text and intelligible audio.
+
+## 📌 Executive Snapshot
+
+- Problem: individuals with dysarthria are often misunderstood by people and standard voice tools.
+- Solution: end-to-end speech interpretation pipeline with correction and optional personalization.
+- Outcome: clearer communication, lower repetition burden, and better accessibility outcomes.
+- Readiness: includes backend APIs, demo frontend, one-click launchers, and presentation assets.
+
+## ⚡ Quick Start (3 Commands)
+
+```bash
+cd speech-disabilities\backend
+..\..\.venv\Scripts\python.exe app.py
+```
+
+In a second terminal:
+
+```bash
+cd speech-disabilities
+c:/Users/GC/Downloads/speech-disabilities/.venv/Scripts/python.exe -m http.server 5173 -d frontend
+```
+
+Open: `http://localhost:5173`
 
 ---
 
 ## 📋 Table of Contents
 
+- [Executive Snapshot](#-executive-snapshot)
+- [Quick Start (3 Commands)](#-quick-start-3-commands)
 - [What is This Project?](#what-is-this-project)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
@@ -15,6 +40,7 @@ This project provides an AI-powered backend service that processes speech from i
 - [API Endpoints](#api-endpoints)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Demo Assets](#demo-assets)
 - [Project Structure](#project-structure)
 - [Technical Details](#technical-details)
 
@@ -22,7 +48,7 @@ This project provides an AI-powered backend service that processes speech from i
 
 ## 🎯 What is This Project?
 
-This is a **speech accessibility tool** designed to help people with dysarthria (motor speech disorders) communicate more effectively. The system:
+This is a speech accessibility platform designed to help people with dysarthria (motor speech disorders) communicate more effectively. The system:
 
 1. **Listens** to dysarthric speech (slurred, impaired pronunciation)
 2. **Transcribes** it using AI speech recognition
@@ -33,10 +59,10 @@ This is a **speech accessibility tool** designed to help people with dysarthria 
 A person with dysarthria says "I wanna go to duh stow" → The system outputs "I want to go to the store" as both text and clear audio.
 
 This enables:
-- Better communication with voice assistants
-- Accessibility for people with speech disabilities
-- Real-time conversation support
-- Medical/therapeutic applications
+- Better day-to-day communication support
+- Improved accessibility outcomes in service environments
+- Real-time conversation assistance
+- Healthcare and therapy support workflows
 
 ---
 
@@ -67,6 +93,12 @@ This enables:
 - User-specific correction learning
 - Pattern adaptation over time
 - Session tracking and statistics
+
+### 🖥️ Demo Console
+- Lightweight frontend (no build step) for live demonstrations
+- Demo Script Mode (auto health -> transcribe -> batch -> user stats)
+- Judge scorecard with radar view (accuracy, speed, personalization, adaptivity, infrastructure)
+- Stage timing bars and explainable correction strategy output
 
 ---
 
@@ -232,9 +264,31 @@ curl -X POST "http://localhost:8000/transcribe" \
   "corrected_text": "I want to go to the store",
   "confidence": 0.94,
   "processing_time": 2.3,
+  "stage_timings": {
+    "preprocess_ms": 120.5,
+    "feature_extraction_ms": 55.1,
+    "asr_ms": 832.4,
+    "correction_ms": 210.3,
+    "tts_ms": 380.7,
+    "total_ms": 1599.0
+  },
+  "correction_metadata": {
+    "strategy": {
+      "mode": "dysarthria_sensitive",
+      "reason": "speech_pattern_trigger"
+    },
+    "rule_changes_count": 2
+  },
+  "runtime": {
+    "asr": {
+      "gpu_backend": "cpu",
+      "latency_ms": 832.4
+    }
+  },
   "features": {
     "speaking_rate": 7.14,
-    "pitch_mean": 857.98
+    "pitch_mean": 857.98,
+    "pause_total": 0.41
   },
   "corrected_audio_url": "/audio/john_doe_20251213_123456_corrected.wav"
 }
@@ -463,6 +517,8 @@ http://localhost:5173
 - Display stage timing bars and total latency
 - Display GPU/runtime telemetry (`gpu_backend`, device, strategy)
 - Run batch processing and user stats
+- Run Demo Script Mode for one-click narrative walkthrough
+- Show judge scorecard and radar widget during live pitch
 
 ### Method 5: One-Click Demo Launcher (Windows)
 
@@ -481,6 +537,25 @@ powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
 This opens:
 - Backend at `http://localhost:8000`
 - Frontend at `http://localhost:5173`
+
+---
+
+## 🎬 Demo Assets
+
+You can regenerate all presentation assets from source scripts.
+
+```bash
+c:/Users/GC/Downloads/speech-disabilities/.venv/Scripts/python.exe tools/generate_demo_video.py
+c:/Users/GC/Downloads/speech-disabilities/.venv/Scripts/python.exe tools/generate_ppt.py
+c:/Users/GC/Downloads/speech-disabilities/.venv/Scripts/python.exe tools/generate_business_doc.py
+```
+
+Generated outputs:
+- `demo/competition_demo.mp4`
+- `demo/competition_presentation.pptx`
+- `demo/Business_Overview_Speech_Disability_Interpreter.docx`
+- `demo/architecture_diagram.png`
+- `demo/DEMO_RUNBOOK.md`
 
 ---
 
@@ -528,7 +603,8 @@ speech-disabilities/
 │
 ├── tools/
 │   ├── generate_demo_video.py    # Script to regenerate demo video
-│   └── generate_ppt.py           # Script to regenerate presentation
+│   ├── generate_ppt.py           # Script to regenerate presentation
+│   └── generate_business_doc.py  # Script to generate business DOCX summary
 │
 ├── scripts/
 │   ├── start_demo.bat            # One-click launcher (Windows)
