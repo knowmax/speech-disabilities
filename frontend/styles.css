@@ -1,0 +1,367 @@
+:root {
+  --bg: #09101f;
+  --bg-elev: #101a2f;
+  --bg-soft: #1a2742;
+  --text: #eaf3ff;
+  --muted: #9cb2d8;
+  --accent: #ff8a3d;
+  --accent-alt: #2ec5b6;
+  --warn: #ffd166;
+  --ok: #57cc99;
+  --danger: #ef476f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 10% 10%, #1a2452 0%, var(--bg) 35%),
+              radial-gradient(circle at 90% 20%, #023047 0%, transparent 30%),
+              var(--bg);
+  min-height: 100vh;
+}
+
+.bg-shape {
+  position: fixed;
+  pointer-events: none;
+  filter: blur(65px);
+  opacity: 0.22;
+  z-index: 0;
+}
+
+.bg-shape-a {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: var(--accent);
+  top: 6%;
+  right: 8%;
+}
+
+.bg-shape-b {
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: var(--accent-alt);
+  bottom: 8%;
+  left: 8%;
+}
+
+.app-shell {
+  width: min(1100px, 92vw);
+  margin: 28px auto 36px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  background: linear-gradient(130deg, rgba(255, 138, 61, 0.14), rgba(46, 197, 182, 0.13));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+  animation: reveal 500ms ease-out;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--warn);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+h1, h2, h3 {
+  margin: 8px 0 10px;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+}
+
+.subtitle {
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.backend-label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input[type="text"],
+input[type="file"] {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+#backendUrl {
+  width: min(320px, 100%);
+}
+
+.pill {
+  display: inline-block;
+  margin-top: 12px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pill.neutral {
+  background: #21314f;
+  color: #b4c8ea;
+}
+
+.pill.ok {
+  background: rgba(87, 204, 153, 0.19);
+  color: #bdf9dc;
+}
+
+.pill.bad {
+  background: rgba(239, 71, 111, 0.2);
+  color: #ffbfd0;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+  animation: reveal 620ms ease-out;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.toggle-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 130ms ease, filter 130ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.btn.primary {
+  background: linear-gradient(120deg, var(--accent), #f7b267);
+  color: #2f1b05;
+}
+
+.btn.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  margin: 14px 0;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  background: var(--bg-soft);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.metric-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.metric-card strong {
+  font-size: 1.1rem;
+}
+
+.text-result p {
+  margin: 6px 0 12px;
+  color: #f2f7ff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 54px;
+}
+
+.hidden {
+  display: none;
+}
+
+.timing-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.timing-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 70px;
+  align-items: center;
+  gap: 10px;
+}
+
+.timing-row span {
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.timing-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.timing-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-alt), #83e8db);
+}
+
+.scorecard {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.score-main {
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  padding-right: 8px;
+}
+
+.score-main span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.score-main strong {
+  font-size: 2rem;
+  color: var(--warn);
+}
+
+#scoreRadar {
+  width: 100%;
+  max-height: 230px;
+  background: rgba(6, 12, 24, 0.85);
+  border-radius: 8px;
+}
+
+.json-view,
+.console-log {
+  background: #060c18;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  color: #d7e7ff;
+  padding: 12px;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 280px;
+}
+
+.console-log {
+  max-height: 170px;
+}
+
+@keyframes reveal {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 930px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .timing-row {
+    grid-template-columns: 120px 1fr 56px;
+  }
+
+  .scorecard {
+    grid-template-columns: 1fr;
+  }
+
+  .score-main {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 10px;
+    padding-right: 0;
+  }
+}

@@ -1,0 +1,40 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment/config secrets
+.env
+.env.*
+!.env.example
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Runtime data artifacts
+backend/data/audio_uploads/*
+backend/data/temp/*
+backend/data/output/*
+backend/data/corrections/*
+backend/data/user_profiles/*
+
+# Keep folder structure
+!backend/data/audio_uploads/.gitkeep
+!backend/data/temp/.gitkeep
+!backend/data/output/.gitkeep
+!backend/data/corrections/.gitkeep
+!backend/data/user_profiles/.gitkeep
+
+# Generated demo artifacts (keep source scripts/docs)
+demo/slides/
+demo/*.mp4
+demo/*.pptx
+demo/*.docx
+demo/*.png

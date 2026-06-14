@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speech Disability Demo Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-shape bg-shape-a"></div>
+  <div class="bg-shape bg-shape-b"></div>
+
+  <main class="app-shell">
+    <header class="hero">
+      <p class="kicker">Competition Demo</p>
+      <h1>AMD-Ready Speech Interpreter</h1>
+      <p class="subtitle">Upload dysarthric audio, compare correction output, and show runtime telemetry live.</p>
+      <div class="hero-actions">
+        <label class="backend-label" for="backendUrl">Backend URL</label>
+        <input id="backendUrl" type="text" value="http://localhost:8000" />
+        <button id="checkHealthBtn" class="btn ghost">Check Health</button>
+      </div>
+      <div id="healthPill" class="pill neutral">Not checked</div>
+    </header>
+
+    <section class="grid two-col">
+      <article class="panel">
+        <h2>Transcribe Audio</h2>
+        <form id="transcribeForm">
+          <label for="audioFile">Audio File (.wav preferred)</label>
+          <input id="audioFile" type="file" accept="audio/*" required />
+
+          <label for="userId">User ID</label>
+          <input id="userId" type="text" value="demo_user" />
+
+          <div class="toggle-row">
+            <label><input id="enableCorrection" type="checkbox" checked /> Enable correction</label>
+            <label><input id="enablePersonalization" type="checkbox" checked /> Enable personalization</label>
+          </div>
+
+          <button id="transcribeBtn" class="btn primary" type="submit">Run Demo Inference</button>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="quick-actions">
+          <button id="batchBtn" class="btn ghost">Run Batch Process</button>
+          <button id="userStatsBtn" class="btn ghost">Get User Stats</button>
+          <button id="demoScriptBtn" class="btn primary" type="button">Demo Script Mode</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Result Snapshot</h2>
+        <div class="metrics-grid" id="topMetrics">
+          <div class="metric-card"><span>Confidence</span><strong id="confidenceValue">-</strong></div>
+          <div class="metric-card"><span>Total Latency</span><strong id="latencyValue">-</strong></div>
+          <div class="metric-card"><span>GPU Backend</span><strong id="backendValue">-</strong></div>
+          <div class="metric-card"><span>Correction Mode</span><strong id="modeValue">-</strong></div>
+        </div>
+
+        <div class="text-result">
+          <h3>Original</h3>
+          <p id="originalText">No output yet.</p>
+          <h3>Corrected</h3>
+          <p id="correctedText">No output yet.</p>
+        </div>
+
+        <div id="audioWrap" class="hidden">
+          <h3>Corrected Audio</h3>
+          <audio id="correctedAudio" controls></audio>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two-col">
+      <article class="panel">
+        <h2>Stage Timings</h2>
+        <div id="timingBars" class="timing-bars"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Runtime + Features</h2>
+        <div class="scorecard">
+          <div class="score-main">
+            <span>Judge Score</span>
+            <strong id="judgeScore">0</strong>
+          </div>
+          <canvas id="scoreRadar" width="320" height="220"></canvas>
+        </div>
+        <pre id="runtimeJson" class="json-view">{}</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Console</h2>
+      <pre id="consoleLog" class="console-log">Ready.</pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

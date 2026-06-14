@@ -439,12 +439,61 @@ print(f"Corrected: {result['corrected_text']}")
 print(f"Download: http://localhost:8000{result['corrected_audio_url']}")
 ```
 
+### Method 4: Lightweight Frontend Demo Console
+
+1. Start backend:
+```bash
+cd backend
+python app.py
+```
+
+2. Start frontend static server (from project root):
+```bash
+c:/Users/GC/Downloads/speech-disabilities/.venv/Scripts/python.exe -m http.server 5173 -d frontend
+```
+
+3. Open:
+```
+http://localhost:5173
+```
+
+4. Demo highlights in UI:
+- Upload audio and run `/transcribe`
+- Show original vs corrected text
+- Display stage timing bars and total latency
+- Display GPU/runtime telemetry (`gpu_backend`, device, strategy)
+- Run batch processing and user stats
+
+### Method 5: One-Click Demo Launcher (Windows)
+
+From project root, start backend + frontend together:
+
+```bash
+scripts\start_demo.bat
+```
+
+PowerShell alternative:
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
+```
+
+This opens:
+- Backend at `http://localhost:8000`
+- Frontend at `http://localhost:5173`
+
 ---
 
 ## 📁 Project Structure
 
 ```
 speech-disabilities/
+├── frontend/
+│   ├── index.html               # Lightweight demo UI
+│   ├── styles.css               # Competition-ready styling
+│   ├── app.js                   # API integration + visual telemetry
+│   └── README.md                # Frontend usage notes
+│
 ├── backend/
 │   ├── app.py                    # FastAPI server (main entry point)
 │   ├── batch_process.py          # CLI batch processing script
@@ -468,9 +517,22 @@ speech-disabilities/
 │   │   ├── user_profiles/        # User personalization data
 │   │   └── corrections/          # Feedback logs
 │   │
-│   └── evaluation/
-│       ├── metrics.py            # WER/CER calculation
-│       └── test_cases.py         # Test scenarios
+├── evaluation/
+│   ├── metrics.py                # WER/CER calculation
+│   └── test_cases.py             # Test scenarios
+│
+├── demo/
+│   ├── competition_demo.mp4      # Generated demo video
+│   ├── competition_presentation.pptx # Generated slide deck
+│   └── DEMO_RUNBOOK.md           # Competition speaking flow
+│
+├── tools/
+│   ├── generate_demo_video.py    # Script to regenerate demo video
+│   └── generate_ppt.py           # Script to regenerate presentation
+│
+├── scripts/
+│   ├── start_demo.bat            # One-click launcher (Windows)
+│   └── start_demo.ps1            # One-click launcher (PowerShell)
 │
 └── README.md                     # This file
 ```

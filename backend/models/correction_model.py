@@ -30,6 +30,7 @@ class CorrectionModel:
             device: cuda/cpu
         """
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.runtime_profile = self._build_runtime_profile()
         
         # Use custom model if provided, otherwise use base T5
         model_path = custom_model_path if custom_model_path else model_name
@@ -51,6 +52,70 @@ class CorrectionModel:
         
         # Common dysarthria-specific corrections (rule-based fallback)
         self.common_corrections = self._load_common_corrections()
+
+    def _build_runtime_profile(self) -> Dict:
+        gpu_available = torch.cuda.is_available()
+        gpu_backend = "cpu"
+        if gpu_available:
+            gpu_backend = "rocm" if getattr(torch.version, "hip", None) else "cuda"
+
+        return {
+            "device": self.device,
+            "gpu_available": gpu_available,
+            "gpu_backend": gpu_backend,
+            "torch_version": torch.__version__
+        }
+
+    def get_runtime_profile(self) -> Dict:
+        return self.runtime_profile
+
+    def _select_correction_strategy(
+        self,
+        confidence: float,
+        audio_features: Optional[Dict],
+        default_max_length: int
+    ) -> Dict:
+        """
+        Pick decoding settings using confidence and speech characteristics.
+        """
+        speaking_rate = (audio_features or {}).get("speaking_rate", 0.0)
+        pause_total = (audio_features or {}).get("pause_total", 0.0)
+
+        strategy = {
+            "mode": "fast",
+            "apply_ml": confidence < 0.95,
+            "num_beams": 4,
+            "temperature": 0.7,
+            "max_length": default_max_length,
+            "reason": "default"
+        }
+
+        if confidence < 0.75:
+            strategy.update({
+                "mode": "high_recovery",
+                "apply_ml": True,
+                "num_beams": 6,
+                "temperature": 0.5,
+                "reason": "low_asr_confidence"
+            })
+        elif speaking_rate > 6.0 or pause_total > 1.5:
+            strategy.update({
+                "mode": "dysarthria_sensitive",
+                "apply_ml": True,
+                "num_beams": 5,
+                "temperature": 0.6,
+                "reason": "speech_pattern_trigger"
+            })
+        elif confidence >= 0.95:
+            strategy.update({
+                "mode": "minimal",
+                "apply_ml": False,
+                "num_beams": 1,
+                "temperature": 0.8,
+                "reason": "high_asr_confidence"
+            })
+
+        return strategy
         
     def correct(
         self,
@@ -80,6 +145,7 @@ class CorrectionModel:
         
         # Apply rule-based corrections first (always apply, regardless of confidence)
         rule_corrected, rule_changes = self._apply_rule_based_corrections(text)
+        strategy = self._select_correction_strategy(confidence, audio_features, max_length)
         
         # If confidence is very high and no rule changes, minimal correction
         if confidence > 0.95 and not rule_changes:
@@ -87,12 +153,18 @@ class CorrectionModel:
             return {
                 "corrected_text": corrected,
                 "confidence": confidence,
-                "corrections_made": []
+                "corrections_made": [],
+                "strategy": strategy
             }
         
-        # Apply ML-based correction if confidence is lower
-        if confidence < 0.95:
-            ml_corrected = self._ml_correct(rule_corrected, max_length)
+        # Apply ML-based correction if adaptive strategy requires it
+        if strategy["apply_ml"]:
+            ml_corrected = self._ml_correct(
+                text=rule_corrected,
+                max_length=strategy["max_length"],
+                num_beams=strategy["num_beams"],
+                temperature=strategy["temperature"]
+            )
         else:
             ml_corrected = rule_corrected
         
@@ -102,10 +174,17 @@ class CorrectionModel:
         return {
             "corrected_text": final_text,
             "confidence": min(confidence * 1.2, 1.0),  # Boost confidence after correction
-            "corrections_made": rule_changes
+            "corrections_made": rule_changes,
+            "strategy": strategy
         }
     
-    def _ml_correct(self, text: str, max_length: int) -> str:
+    def _ml_correct(
+        self,
+        text: str,
+        max_length: int,
+        num_beams: int = 4,
+        temperature: float = 0.7
+    ) -> str:
         """
         ML-based correction using T5
         """
@@ -126,10 +205,10 @@ class CorrectionModel:
             outputs = self.model.generate(
                 **inputs,
                 max_length=max_length,
-                num_beams=4,
+                num_beams=num_beams,
                 early_stopping=True,
                 no_repeat_ngram_size=3,
-                temperature=0.7
+                temperature=temperature
             )
         
         corrected = self.tokenizer.decode(outputs[0], skip_special_tokens=True)

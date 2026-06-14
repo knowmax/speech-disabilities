@@ -81,6 +81,9 @@ class TranscriptionResponse(BaseModel):
     word_error_rate: Optional[float] = None
     features: Optional[dict] = None
     corrected_audio_url: Optional[str] = None  # URL to download corrected audio
+    runtime: Optional[dict] = None
+    stage_timings: Optional[dict] = None
+    correction_metadata: Optional[dict] = None
 
 
 # Startup event - initialize models
@@ -93,8 +96,11 @@ async def startup_event():
     
     # Initialize components
     audio_preprocessor = AudioPreprocessor()
-    asr_engine = WhisperASR(model_size="base")  # Can use "small", "medium" for better accuracy
-    correction_model = CorrectionModel()
+    asr_engine = WhisperASR(
+        model_size=os.getenv("ASR_MODEL_SIZE", "base"),
+        device=os.getenv("ASR_DEVICE")
+    )
+    correction_model = CorrectionModel(device=os.getenv("CORRECTION_DEVICE"))
     personalization_engine = PersonalizationEngine(storage_path=USER_PROFILES_DIR)
     tts_engine = TTSEngine()
     
@@ -122,6 +128,10 @@ async def health_check():
             "correction": correction_model is not None,
             "personalization": personalization_engine is not None,
             "tts": tts_engine is not None
+        },
+        "runtime": {
+            "asr": asr_engine.get_runtime_profile() if asr_engine else None,
+            "correction": correction_model.get_runtime_profile() if correction_model else None
         }
     }
 
@@ -137,7 +147,9 @@ async def transcribe_audio(
     Upload audio file and get transcription with optional correction
     """
     import time
-    start_time = time.time()
+    start_time = time.perf_counter()
+    stage_start = start_time
+    stage_timings = {}
     
     try:
         # Save uploaded file
@@ -150,18 +162,26 @@ async def transcribe_audio(
         
         # Preprocess audio
         preprocessed_audio = audio_preprocessor.preprocess(str(audio_path))
+        stage_timings["preprocess_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         
         # Extract features
+        stage_start = time.perf_counter()
         audio_features = AudioFeatures.extract(preprocessed_audio)
+        stage_timings["feature_extraction_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         
         # Run ASR
+        stage_start = time.perf_counter()
         asr_result = asr_engine.transcribe(preprocessed_audio)
+        stage_timings["asr_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         original_text = asr_result["text"]
         confidence = asr_result.get("confidence", 0.0)
+        asr_runtime = asr_result.get("runtime", {})
         
         # Apply correction if enabled
         corrected_text = original_text
+        correction_result = {}
         if enable_correction and original_text:
+            stage_start = time.perf_counter()
             correction_result = correction_model.correct(
                 text=original_text,
                 audio_features=audio_features,
@@ -169,17 +189,21 @@ async def transcribe_audio(
             )
             corrected_text = correction_result["corrected_text"]
             confidence = correction_result.get("confidence", confidence)
+            stage_timings["correction_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         
         # Apply personalization if enabled
         if enable_personalization and user_id != "default":
+            stage_start = time.perf_counter()
             corrected_text = personalization_engine.apply_user_corrections(
                 user_id=user_id,
                 text=corrected_text
             )
+            stage_timings["personalization_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         
         # Generate corrected audio (normal speech from corrected text)
         corrected_audio_path = None
         if corrected_text and corrected_text != original_text:
+            stage_start = time.perf_counter()
             corrected_audio_filename = f"{user_id}_{timestamp}_corrected.wav"
             corrected_audio_path = AUDIO_DIR / corrected_audio_filename
             tts_engine.synthesize(
@@ -187,10 +211,12 @@ async def transcribe_audio(
                 output_path=str(corrected_audio_path)
             )
             corrected_audio_url = f"/audio/{corrected_audio_filename}"
+            stage_timings["tts_ms"] = round((time.perf_counter() - stage_start) * 1000, 2)
         else:
             corrected_audio_url = None
         
-        processing_time = time.time() - start_time
+        processing_time = time.perf_counter() - start_time
+        stage_timings["total_ms"] = round(processing_time * 1000, 2)
         
         # Calculate WER if we have ground truth (for demo purposes)
         wer = None
@@ -204,9 +230,20 @@ async def transcribe_audio(
             features={
                 "speaking_rate": audio_features.get("speaking_rate"),
                 "pitch_mean": audio_features.get("pitch_mean"),
-                "energy": audio_features.get("energy")
+                "energy_mean": audio_features.get("energy_mean"),
+                "pause_total": audio_features.get("pause_total")
             },
-            corrected_audio_url=corrected_audio_url
+            corrected_audio_url=corrected_audio_url,
+            runtime={
+                "asr": asr_runtime,
+                "asr_engine": asr_engine.get_runtime_profile(),
+                "correction_engine": correction_model.get_runtime_profile()
+            },
+            stage_timings=stage_timings,
+            correction_metadata={
+                "strategy": correction_result.get("strategy") if correction_result else None,
+                "rule_changes_count": len(correction_result.get("corrections_made", [])) if correction_result else 0
+            }
         )
         
     except Exception as e:
